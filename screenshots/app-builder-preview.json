@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ChemVault 10",
+      "hasCanvas": false,
+      "bodyTextLen": 85291,
+      "bodyTextHash": "9d4817f2ceeb9c802da350387e40a79c19963c773c24efa7117c11c6cb661de8",
+      "bodyTextPrefix": "ChemVault 10 CBSE · CLASS 10 LIBRARY Overview Reactions Colour A",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ChemVault 10",
+      "hasCanvas": false,
+      "bodyTextLen": 85317,
+      "bodyTextHash": "fcf0901d31f4118cb15d3651b0b6b795848b7a7e7cadfcbee72dc39641f4f501",
+      "bodyTextPrefix": "ChemVault 10 CBSE · CLASS 10 LIBRARY Overview Reactions Colour A",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
