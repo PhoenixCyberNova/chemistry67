@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Palette,
   RotateCcw,
+  Scale,
   TestTubes,
   Users,
   X,
@@ -20,6 +21,7 @@ import type { ReactNode } from "react";
 export type Section =
   | "overview"
   | "reactions"
+  | "balancer"
   | "colours"
   | "lab"
   | "simulator"
@@ -39,6 +41,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: "overview", label: "Overview", icon: <LayoutGrid className="size-[1.05rem]" /> },
       { id: "reactions", label: "Reactions", icon: <FlaskConical className="size-[1.05rem]" /> },
+      { id: "balancer", label: "Balancer", icon: <Scale className="size-[1.05rem]" /> },
       { id: "colours", label: "Colour Atlas", icon: <Palette className="size-[1.05rem]" /> },
       { id: "lab", label: "Lab Bench", icon: <TestTubes className="size-[1.05rem]" /> },
       { id: "simulator", label: "Virtual Lab", icon: <Beaker className="size-[1.05rem]" /> },

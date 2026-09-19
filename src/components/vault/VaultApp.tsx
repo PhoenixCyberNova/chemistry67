@@ -3,6 +3,7 @@ import { AuthSlot } from "@/components/vault/AuthSlot";
 import { ChemLab } from "@/components/vault/ChemLab";
 import { ColorChips } from "@/components/vault/ColorChips";
 import { ColourAtlas } from "@/components/vault/ColourAtlas";
+import { EquationBalancer } from "@/components/vault/EquationBalancer";
 import { GlobalSearch } from "@/components/vault/GlobalSearch";
 import { MasteryStrip } from "@/components/vault/MasteryStrip";
 import { Onboarding } from "@/components/vault/Onboarding";
@@ -54,6 +55,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 const SECTION_IDS: Section[] = [
   "overview",
   "reactions",
+  "balancer",
   "colours",
   "lab",
   "simulator",
@@ -474,6 +476,8 @@ export function VaultApp() {
               </div>
             )}
           </section>
+
+          <EquationBalancer />
 
           {/* ==================== COLOUR ATLAS ==================== */}
           <section id="colours" className="scroll-mt-24 py-12">
