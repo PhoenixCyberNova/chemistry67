@@ -3,7 +3,7 @@ import { quizBank } from "@/lib/data/quiz-bank";
 import { expandAliases } from "@/lib/data/aliases";
 import { reactionKey } from "@/lib/reaction-filters";
 
-export type SearchKind = "reaction" | "colour" | "definition" | "note" | "quiz" | "chapter";
+export type SearchKind = "reaction" | "colour" | "definition" | "note" | "quiz" | "chapter" | "tool";
 
 export type SearchHit = {
   id: string;
@@ -54,6 +54,21 @@ export function searchVault(query: string, limit = 24): SearchHit[] {
   if (q.length < 1) return [];
   const needles = [q, ...expandAliases(q)].slice(0, 12);
   const hits: SearchHit[] = [];
+
+  const toolScore = bestScore(
+    "equation balancer balance chemical equation stoichiometry coefficients matrix gaussian rref conservation of mass",
+    needles,
+  );
+  if (toolScore >= 28) {
+    hits.push({
+      id: "balancer",
+      kind: "tool",
+      title: "Chemical equation balancer",
+      snippet: "Exact rational matrix solver with atom-conservation check and a live balance scale.",
+      href: "balancer",
+      score: toolScore + 8,
+    });
+  }
 
   for (const ch of chapters) {
     const score = bestScore(`${ch.title} ${ch.blurb} chapter ${ch.num} ${ch.id}`, needles);

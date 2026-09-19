@@ -7,6 +7,7 @@ import {
   Lightbulb,
   Palette,
   GraduationCap,
+  Scale,
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -18,6 +19,7 @@ const KIND_META: Record<SearchHit["kind"], { label: string; icon: typeof Search 
   note: { label: "Note", icon: Lightbulb },
   quiz: { label: "Question", icon: GraduationCap },
   chapter: { label: "Chapter", icon: BookOpen },
+  tool: { label: "Tool", icon: Scale },
 };
 
 export function GlobalSearch({
