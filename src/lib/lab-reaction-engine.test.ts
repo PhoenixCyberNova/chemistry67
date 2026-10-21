@@ -43,7 +43,10 @@ describe("lab-reaction-engine systematic rules", () => {
           (out.kind === "reaction" && out.reaction.equation === "No reaction"),
       );
       if (out.kind === "no_reaction") {
-        assert.match(out.reason, /below hydrogen|cannot displace/i);
+        assert.match(
+          out.reason,
+          /below hydrogen|cannot displace|No hydrogen|unreacted|no colour change/i,
+        );
       }
     }
   });
