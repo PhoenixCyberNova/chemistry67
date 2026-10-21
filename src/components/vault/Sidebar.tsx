@@ -15,6 +15,7 @@ import {
   TestTubes,
   Users,
   X,
+  Atom,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -25,6 +26,7 @@ export type Section =
   | "colours"
   | "lab"
   | "simulator"
+  | "molecules"
   | "definitions"
   | "notes"
   | "quiz"
@@ -45,6 +47,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { id: "colours", label: "Colour Atlas", icon: <Palette className="size-[1.05rem]" /> },
       { id: "lab", label: "Lab Bench", icon: <TestTubes className="size-[1.05rem]" /> },
       { id: "simulator", label: "Virtual Lab", icon: <Beaker className="size-[1.05rem]" /> },
+      { id: "molecules", label: "3D Molecules", icon: <Atom className="size-[1.05rem]" /> },
       { id: "definitions", label: "Definitions", icon: <BookOpen className="size-[1.05rem]" /> },
       { id: "notes", label: "Exam Notes", icon: <Lightbulb className="size-[1.05rem]" /> },
     ],
@@ -70,24 +73,21 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
       <span className="relative grid size-10 shrink-0 place-items-center rounded-[0.85rem] border border-primary/30 bg-gradient-to-br from-primary/25 via-primary/10 to-gold/15 shadow-[0_8px_22px_-8px_rgb(47_212_192/0.5)]">
         <svg viewBox="0 0 24 24" fill="none" className="size-5">
           <path
-            d="M9.5 3h5M10.5 3v5.2c0 .9-3 3.4-3 7.3a4.5 4.5 0 0 0 9 0c0-3.9-3-6.4-3-7.3V3"
+            d="M9.5 3h5M10.5 3v5.2c0 .9-.4 1.8-1.1 2.6L7 14.5c-.6.7-.9 1.5-.9 2.4 0 2.1 1.7 3.8 3.8 3.8h4.2c2.1 0 3.8-1.7 3.8-3.8 0-.9-.3-1.7-.9-2.4L14.6 10.8c-.7-.8-1.1-1.7-1.1-2.6V3"
             stroke="currentColor"
+            className="text-primary"
             strokeWidth="1.6"
             strokeLinecap="round"
-            className="text-primary"
+            strokeLinejoin="round"
           />
-          <path d="M8 13.6c2.4 1.4 5.6 1.4 8 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" className="text-gold" />
         </svg>
-        <span className="pulse-dot absolute -right-0.5 -top-0.5 size-2 rounded-full bg-gold shadow-[0_0_8px_2px_rgb(226_194_132/0.5)]" />
       </span>
       {!compact && (
-        <span className="min-w-0 leading-tight">
-          <span className="wordmark block font-display text-[1.35rem] font-semibold tracking-tight">
-            ChemVault 10
+        <span className="min-w-0">
+          <span className="block truncate font-display text-base font-semibold leading-tight text-fg">
+            ChemVault
           </span>
-          <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-muted">
-            CBSE · Class 10
-          </span>
+          <span className="block truncate text-[0.68rem] text-muted">Class 10 · NCERT aligned</span>
         </span>
       )}
     </span>
@@ -97,127 +97,77 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
 export function Sidebar({
   section,
   onNavigate,
-  mobileOpen,
-  onCloseMobile,
-  footer,
+  open,
+  onClose,
 }: {
   section: Section;
   onNavigate: (id: Section) => void;
-  mobileOpen: boolean;
-  onCloseMobile: () => void;
-  footer?: ReactNode;
+  open?: boolean;
+  onClose?: () => void;
 }) {
-  const streak = useStudent((s) => s.streak);
-  const stars = useStudent((s) => s.stars);
   const mastery = useStudent((s) => s.mastery);
-  const quizLog = useStudent((s) => s.quizLog);
+  const pct = useMemo(() => overallMastery(mastery), [mastery]);
 
-  const overall = useMemo(
-    () =>
-      overallMastery({
-        v: 1,
-        updatedAt: 0,
-        theme: "dark",
-        onboardingDone: true,
-        stars,
-        bookDefs: [],
-        bookNotes: [],
-        bookQuiz: [],
-        mastery,
-        quizLog,
-        streak,
-      }),
-    [mastery, quizLog, stars, streak],
-  );
-
-  const body = (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-5 pb-2 pt-5">
+  return (
+    <aside
+      className={
+        "sidebar-shell fixed inset-y-0 left-0 z-40 flex w-[16.5rem] flex-col border-r border-border bg-bg/95 backdrop-blur-md transition-transform lg:static lg:translate-x-0 " +
+        (open ? "translate-x-0" : "-translate-x-full lg:translate-x-0")
+      }
+    >
+      <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3.5">
         <BrandMark />
         <button
           type="button"
+          className="btn btn-ghost size-9 p-0 lg:hidden"
+          onClick={onClose}
           aria-label="Close menu"
-          onClick={onCloseMobile}
-          className="grid size-9 place-items-center rounded-xl border border-border text-muted transition-colors hover:text-fg lg:hidden"
         >
           <X className="size-4" />
         </button>
       </div>
 
-      <nav className="no-scrollbar flex-1 overflow-y-auto px-2.5 pb-4">
+      <nav className="flex-1 overflow-y-auto px-2.5 py-3">
         {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
+          <div key={group.label} className="mb-3">
             <p className="nav-group-label">{group.label}</p>
-            <div className="relative grid gap-0.5">
-              {group.items.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onNavigate(item.id)}
-                  aria-current={section === item.id ? "true" : undefined}
-                  className={`nav-item ${section === item.id ? "on" : ""}`}
-                >
-                  <span className={section === item.id ? "text-primary" : "text-muted"}>
-                    {item.icon}
-                  </span>
-                  <span className="flex-1">{item.label}</span>
-                  {section === item.id && (
-                    <svg viewBox="0 0 8 8" className="size-1.5 text-gold" fill="currentColor" aria-hidden>
-                      <circle cx="4" cy="4" r="4" />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
+            <ul className="mt-1 space-y-0.5">
+              {group.items.map((item) => {
+                const on = section === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      data-nav={item.id}
+                      onClick={() => {
+                        onNavigate(item.id);
+                        onClose?.();
+                      }}
+                      className={
+                        "nav-item flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-sm transition-colors " +
+                        (on ? "nav-item-on" : "text-muted hover:bg-raised/50 hover:text-fg")
+                      }
+                    >
+                      <span className="grid size-8 place-items-center rounded-lg border border-border/70 bg-bg/40 text-primary">
+                        {item.icon}
+                      </span>
+                      <span className="flex-1">{item.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         ))}
       </nav>
 
-      <div className="border-t border-border/70 px-4 py-4">
-        <div className="flex items-center justify-between gap-2 rounded-2xl border border-border/70 bg-bg/60 px-3.5 py-3">
-          <div className="min-w-0">
-            <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-muted">Mastery</p>
-            <p className="tabular font-display text-xl leading-tight text-fg">{overall}%</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-muted">Streak</p>
-            <p className="tabular font-display text-xl leading-tight text-primary">
-              {streak.count}
-              <span className="ml-0.5 text-[0.65rem] font-sans font-medium text-muted">d</span>
-            </p>
-          </div>
+      <div className="border-t border-border px-4 py-3">
+        <p className="text-[0.68rem] text-muted">Mastery</p>
+        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-raised">
+          <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
         </div>
-        {footer ? <div className="mt-3 flex items-center justify-end gap-2">{footer}</div> : null}
+        <p className="mt-1 text-[0.72rem] font-medium text-fg">{pct}% board-ready</p>
       </div>
-    </div>
-  );
-
-  return (
-    <>
-      {/* Desktop rail */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] border-r border-border/70 bg-surface/70 backdrop-blur-2xl lg:block">
-        {body}
-      </aside>
-
-      {/* Mobile drawer */}
-      <div
-        className={`fixed inset-0 z-[55] lg:hidden ${mobileOpen ? "" : "pointer-events-none"}`}
-        aria-hidden={!mobileOpen}
-      >
-        <div
-          onClick={onCloseMobile}
-          className={`absolute inset-0 bg-bg/70 backdrop-blur-sm transition-opacity duration-300 ${
-            mobileOpen ? "opacity-100" : "opacity-0"
-          }`}
-        />
-        <aside
-          className={`absolute inset-y-0 left-0 w-[290px] max-w-[86vw] border-r border-border bg-surface shadow-[0_0_80px_rgb(0_0_0/0.6)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)] ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          {body}
-        </aside>
-      </div>
-    </>
+    </aside>
   );
 }
