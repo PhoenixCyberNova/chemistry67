@@ -11,7 +11,6 @@
 
 import {
   type LabReaction,
-  type LabEffect,
   CHEMICALS,
   LAB_REACTIONS,
   canonicalId,
@@ -108,7 +107,7 @@ function genId(parts: string[]): string {
   return "rule-" + parts.map(canonicalId).sort().join("-");
 }
 
-function metalAcidRule(ids: string[], heated: boolean): EngineOutcome | null {
+function metalAcidRule(ids: string[], _heated: boolean): EngineOutcome | null {
   const list = ids.map(canonicalId);
   if (list.length < 2 || list.length > 3) return null;
   const metals = list.filter(isMetal);
@@ -127,7 +126,6 @@ function metalAcidRule(ids: string[], heated: boolean): EngineOutcome | null {
     };
   }
 
-  // Salt product (simplified Class-10 style)
   const saltMap: Record<string, Record<string, string>> = {
     hcl: {
       k: "KCl", na: "NaCl", ca: "CaCl₂", mg: "MgCl₂", al: "AlCl₃",
@@ -137,9 +135,7 @@ function metalAcidRule(ids: string[], heated: boolean): EngineOutcome | null {
       k: "K₂SO₄", na: "Na₂SO₄", ca: "CaSO₄", mg: "MgSO₄", al: "Al₂(SO₄)₃",
       zn: "ZnSO₄", fe: "FeSO₄", sn: "SnSO₄", pb: "PbSO₄",
     },
-    hno3: {
-      // dilute HNO₃ is more complex (NO etc.) — mark as limited
-    },
+    hno3: {},
     ch3cooh: {
       k: "CH₃COOK", na: "CH₃COONa", ca: "(CH₃COO)₂Ca", mg: "(CH₃COO)₂Mg",
       zn: "(CH₃COO)₂Zn", fe: "(CH₃COO)₂Fe", al: "(CH₃COO)₃Al",
@@ -166,10 +162,6 @@ function metalAcidRule(ids: string[], heated: boolean): EngineOutcome | null {
   const acidF = formulaOf(acid);
   const equation = `${metalF}(s) + ${acidF}(aq) → ${salt}(aq) + H₂(g)`;
   const needsWarm = metal === "al" || metal === "fe" || metal === "sn" || metal === "pb";
-
-  if (needsWarm && !heated && metal !== "zn" && metal !== "mg") {
-    // still allow room-temp for most; observation notes slow rate
-  }
 
   const reaction: LabReaction = {
     id: genId([metal, acid]),
@@ -245,7 +237,6 @@ function neutralisationRule(ids: string[]): EngineOutcome | null {
   const acidF = formulaOf(acid);
   const baseF = formulaOf(base);
 
-  // Simple salt names for common pairs
   const salt =
     acid === "hcl" && base === "naoh"
       ? "NaCl"
@@ -279,14 +270,10 @@ function neutralisationRule(ids: string[]): EngineOutcome | null {
 function displacementRule(ids: string[]): EngineOutcome | null {
   const list = ids.map(canonicalId);
   if (list.length !== 2) return null;
-  const metals = list.filter(isMetal);
-  const salts = list.filter((id) => SALT_SOLUTION_IDS.has(id) || id.includes("so4") || id.includes("no3") || id.includes("cl"));
-  // Prefer known salt solutions
   const saltId = list.find((id) => ["cuso4", "agno3", "znso4", "fecl3", "pbno3"].includes(id));
   const metalId = list.find((id) => isMetal(id) && id !== saltId);
   if (!metalId || !saltId) return null;
 
-  // Extract passive metal from salt id heuristics
   const passiveFromSalt: Record<string, string> = {
     cuso4: "cu",
     agno3: "ag",
@@ -308,7 +295,6 @@ function displacementRule(ids: string[]): EngineOutcome | null {
   const activeF = formulaOf(metalId);
   const saltF = formulaOf(saltId);
   const passiveF = formulaOf(passive);
-  // Product salt is simplified
   const productSalt =
     saltId === "cuso4"
       ? metalId === "zn"
@@ -356,7 +342,7 @@ function indicatorRule(ids: string[]): EngineOutcome | null {
 
   let observation = "";
   let flaskColor = "#f0f0f0";
-  let equation = "Colour change (indicator)";
+  const equation = "Colour change (indicator)";
 
   if (ind === "phph") {
     if (acid) {
@@ -376,7 +362,7 @@ function indicatorRule(ids: string[]): EngineOutcome | null {
     }
   } else if (ind === "universal") {
     if (acid) {
-      observation = "Universal indicator shows red / orange (acidic pH).",
+      observation = "Universal indicator shows red / orange (acidic pH).";
       flaskColor = "#e05a4a";
     } else {
       observation = "Universal indicator shows blue / purple (alkaline pH).";
@@ -400,13 +386,11 @@ function indicatorRule(ids: string[]): EngineOutcome | null {
 }
 
 function precipitationRule(ids: string[]): EngineOutcome | null {
-  // Classic Class-10 precipitations
   const set = new Set(ids.map(canonicalId));
-  const pairs: { a: string; b: string; ppt: string; colour: string; eq: string; obs: string }[] = [
+  const pairs: { a: string; b: string; colour: string; eq: string; obs: string }[] = [
     {
       a: "agno3",
       b: "nacl",
-      ppt: "AgCl",
       colour: "#f4f1ea",
       eq: "AgNO₃(aq) + NaCl(aq) → AgCl(s) + NaNO₃(aq)",
       obs: "White curdy precipitate of AgCl; soluble in NH₄OH.",
@@ -414,22 +398,12 @@ function precipitationRule(ids: string[]): EngineOutcome | null {
     {
       a: "agno3",
       b: "kcl",
-      ppt: "AgCl",
       colour: "#f4f1ea",
       eq: "AgNO₃(aq) + KCl(aq) → AgCl(s) + KNO₃(aq)",
       obs: "White curdy precipitate of AgCl.",
     },
-    {
-      a: "baso4", // if both present as soluble precursors we use Ba²⁺ + SO₄²⁻ style
-      b: "",
-      ppt: "",
-      colour: "",
-      eq: "",
-      obs: "",
-    },
   ];
 
-  // BaCl₂ + Na₂SO₄ style if we have those ids (may not be in catalogue)
   if (set.has("agno3") && (set.has("nacl") || set.has("kcl"))) {
     const halide = set.has("nacl") ? "nacl" : "kcl";
     const pair = pairs.find((p) => p.a === "agno3" && p.b === halide)!;
@@ -467,7 +441,6 @@ export function resolveLabReaction(ids: string[], heated: boolean): EngineOutcom
 
   const catalogue = catalogueMatch(ids, heated);
   if (catalogue) {
-    // Catalogue already encodes many "no reaction" rows (equation: "No reaction")
     if (catalogue.equation === "No reaction" || catalogue.type === "No reaction") {
       return {
         kind: "no_reaction",
@@ -478,7 +451,6 @@ export function resolveLabReaction(ids: string[], heated: boolean): EngineOutcom
     return { kind: "reaction", reaction: catalogue, source: "catalogue" };
   }
 
-  // Try rules in priority order
   const rules: Array<() => EngineOutcome | null> = [
     () => metalAcidRule(ids, heated),
     () => acidCarbonateRule(ids),
@@ -493,7 +465,6 @@ export function resolveLabReaction(ids: string[], heated: boolean): EngineOutcom
     if (out) return out;
   }
 
-  // Single reagent + heat: only a few decompositions are modelled
   if (ids.length === 1 && heated) {
     return {
       kind: "unsupported",
@@ -521,7 +492,7 @@ export function matchLabReactionSmart(ids: string[], heated: boolean): LabReacti
   return out.kind === "reaction" ? out.reaction : null;
 }
 
-export function engineMessage(out: EngineOutcome, heated: boolean): string {
+export function engineMessage(out: EngineOutcome, _heated: boolean): string {
   if (out.kind === "reaction") return "";
   if (out.kind === "no_reaction") {
     return `No reaction under these conditions. ${out.reason}${out.ncert ? ` (${out.ncert})` : ""}`;
